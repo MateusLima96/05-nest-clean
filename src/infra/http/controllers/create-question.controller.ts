@@ -1,13 +1,5 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  UseGuards,
-} from '@nestjs/common'
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common'
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
-import { JwtAuthGuard } from '@/infra/auth/jwt-auth.guard'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
 import { z } from 'zod'
@@ -21,13 +13,12 @@ const createQuestionBodySchema = z.object({
 const bodyValidationPipe = new ZodValidationPipe(createQuestionBodySchema)
 
 type CreateQuestionBodySchema = z.infer<typeof createQuestionBodySchema>
+
 @Controller('/questions')
-@UseGuards(JwtAuthGuard)
 export class CreateQuestionController {
-  constructor(private createQuestionUseCase: CreateQuestionUseCase) {}
+  constructor(private createQuestion: CreateQuestionUseCase) {}
 
   @Post()
-  @HttpCode(201)
   async handle(
     @Body(bodyValidationPipe) body: CreateQuestionBodySchema,
     @CurrentUser() user: UserPayload,
@@ -35,10 +26,10 @@ export class CreateQuestionController {
     const { title, content } = body
     const userId = user.sub
 
-    const result = await this.createQuestionUseCase.execute({
-      authorId: userId,
+    const result = await this.createQuestion.execute({
       title,
       content,
+      authorId: userId,
       attachmentsIds: [],
     })
 
