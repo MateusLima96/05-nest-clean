@@ -1,7 +1,7 @@
 import { Either, left, right } from '@/core/either'
 import { Injectable } from '@nestjs/common'
 import { InvalidAttachmentType } from './errors/invalid-attachment-type'
-import { Attachment } from '../../enterprise/entities/attachement'
+import { Attachment } from '../../enterprise/entities/attachment'
 import { AttachmentsRepository } from '../repositories/attachments-repository'
 import { Uploader } from '../storage/uploader'
 
@@ -11,12 +11,11 @@ interface UploadAndCreateAttachmentRequest {
   body: Buffer
 }
 
-type UploadAndCreateAttachmentUseCaseResponse = Either<
+type UploadAndCreateAttachmentResponse = Either<
   InvalidAttachmentType,
-  {
-    attachment: Attachment
-  }
+  { attachment: Attachment }
 >
+
 @Injectable()
 export class UploadAndCreateAttachmentUseCase {
   constructor(
@@ -28,19 +27,12 @@ export class UploadAndCreateAttachmentUseCase {
     fileName,
     fileType,
     body,
-  }: UploadAndCreateAttachmentRequest): Promise<UploadAndCreateAttachmentUseCaseResponse> {
-    const validateMimeTypeFile =
-      /^(image\/jpeg|image\/png|application\/pdf)$/.test(fileType)
-
-    if (!validateMimeTypeFile) {
+  }: UploadAndCreateAttachmentRequest): Promise<UploadAndCreateAttachmentResponse> {
+    if (!/^(image\/(jpeg|png))$|^application\/pdf$/.test(fileType)) {
       return left(new InvalidAttachmentType(fileType))
     }
 
-    const { url } = await this.uploader.upload({
-      fileName,
-      fileType,
-      body,
-    })
+    const { url } = await this.uploader.upload({ fileName, fileType, body })
 
     const attachment = Attachment.create({
       title: fileName,

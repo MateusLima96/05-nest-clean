@@ -44,4 +44,20 @@ GET {{baseUrl}}/questions
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
+###
+
+# @name upload_attachment
+
+POST {{baseUrl}}/attachments
+Content-Type: multipart/form-data; boundary=boundary 
+Authorization: Bearer {{authToken}}
+
+{
+  "fileName": "example.png",
+  "fileType": "image/png",
+  "body": "iVBORw0KGgoAAAANSUhEUgAAA..."
+}
+
+
+
 

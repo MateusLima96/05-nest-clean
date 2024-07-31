@@ -1,21 +1,22 @@
 import {
-  Uploader,
   UploadParams,
+  Uploader,
 } from '@/domain/forum/application/storage/uploader'
 
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { Injectable } from '@nestjs/common'
 import { EnvService } from '../env/env.service'
 import { randomUUID } from 'node:crypto'
-import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class R2Storage implements Uploader {
   private client: S3Client
 
   constructor(private envService: EnvService) {
-    const accountid = envService.get('CLOUDFLARE_ACCOUNT_ID')
+    const accountId = envService.get('CLOUDFLARE_ACCOUNT_ID')
+
     this.client = new S3Client({
-      endpoint: `https://${accountid}.r2.cloudflarestorage.com`,
+      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
       region: 'auto',
       credentials: {
         accessKeyId: envService.get('AWS_ACCESS_KEY_ID'),
