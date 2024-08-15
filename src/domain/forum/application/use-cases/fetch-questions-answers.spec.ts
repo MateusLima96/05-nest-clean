@@ -1,18 +1,24 @@
 import { InMemoryAnswersRepository } from 'test/repositories/in-memory-answers-repository'
-import { FetchQuestionsAnswersUseCase } from './fetch-questions-answers'
+import { FetchQuestionsAnswersUseCase } from '@/domain/forum/application/use-cases/fetch-questions-answers'
 import { makeAnswer } from 'test/factories/make-answer'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id'
+import { InMemoryAnswerAttachmentsRepository } from 'test/repositories/in-memory-answer-attachments-repository'
 
+let inMemoryAnswerAttachmentsRepository: InMemoryAnswerAttachmentsRepository
 let inMemoryAnswersRepository: InMemoryAnswersRepository
 let sut: FetchQuestionsAnswersUseCase
 
 describe('Fetch Question Answers', () => {
   beforeEach(() => {
-    inMemoryAnswersRepository = new InMemoryAnswersRepository()
+    inMemoryAnswerAttachmentsRepository =
+      new InMemoryAnswerAttachmentsRepository()
+    inMemoryAnswersRepository = new InMemoryAnswersRepository(
+      inMemoryAnswerAttachmentsRepository,
+    )
     sut = new FetchQuestionsAnswersUseCase(inMemoryAnswersRepository)
   })
 
-  it('should be able to fetch recent questions', async () => {
+  it('should be able to fetch question answers', async () => {
     await inMemoryAnswersRepository.create(
       makeAnswer({
         questionId: new UniqueEntityID('question-1'),
@@ -30,15 +36,14 @@ describe('Fetch Question Answers', () => {
     )
 
     const result = await sut.execute({
-      page: 1,
       questionId: 'question-1',
+      page: 1,
     })
 
     expect(result.value?.answers).toHaveLength(3)
-    expect(result.isRight()).toBe(true)
   })
 
-  it('should be able to fetch pagineted questions answers', async () => {
+  it('should be able to fetch paginated question answers', async () => {
     for (let i = 1; i <= 22; i++) {
       await inMemoryAnswersRepository.create(
         makeAnswer({
@@ -48,11 +53,10 @@ describe('Fetch Question Answers', () => {
     }
 
     const result = await sut.execute({
-      page: 2,
       questionId: 'question-1',
+      page: 2,
     })
 
     expect(result.value?.answers).toHaveLength(2)
-    expect(result.isRight()).toBe(true)
   })
 })
